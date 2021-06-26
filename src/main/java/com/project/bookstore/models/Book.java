@@ -34,9 +34,18 @@ public class Book {
     )
     private List<UserBook> users = new ArrayList<>();
 
-    public Book(String title, String author) {
+    private double price;
+
+    @OneToMany(mappedBy = "book",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<UserOrder> orders;
+
+    public Book(String title, String author, double price) {
         this.author = author;
         this.title = title;
+        this.price = price;
     }
 
     public Book() {
@@ -53,5 +62,21 @@ public class Book {
 
     public Long getId() {
         return id;
+    }
+
+    public Set<UserOrder> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(Set<UserOrder> orders) {
+        this.orders = orders;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

@@ -3,10 +3,12 @@ package com.project.bookstore.payload.request;
 public class BookRequest {
     private String title;
     private String author;
+    private double price;
 
-    public BookRequest(String title, String author) {
+    public BookRequest(String title, String author, double price) {
         this.author = author;
         this.title = title;
+        this.price = price;
     }
 
     public void setTitle(String title) {
@@ -23,5 +25,13 @@ public class BookRequest {
 
     public String getTitle() {
         return title;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

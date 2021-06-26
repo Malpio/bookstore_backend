@@ -47,6 +47,12 @@ public class User {
     )
     private List<UserBook> books = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<UserOrder> orders;
+
     public User() {
     }
 
@@ -102,5 +108,13 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public Set<UserOrder> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(Set<UserOrder> orders) {
+        this.orders = orders;
     }
 }

@@ -2,6 +2,7 @@ package com.project.bookstore.payload.response;
 
 import com.project.bookstore.models.Book;
 import com.project.bookstore.models.BookReview;
+import com.project.bookstore.models.EUserBook;
 
 import java.util.List;
 
@@ -12,14 +13,24 @@ public class BookDetailsResponse {
     private List<ReviewResponse> reviews;
     private boolean isRateByMe;
     private boolean isReviewByMe;
+    private EUserBook status;
 
-    public BookDetailsResponse(Book book, double rate, int myRate, List<ReviewResponse> reviews, boolean isRateByMe, boolean isReviewByMe) {
+    public BookDetailsResponse(Book book, double rate, int myRate, List<ReviewResponse> reviews, boolean isRateByMe, boolean isReviewByMe, EUserBook status) {
         this.book = book;
         this.rate = rate;
         this.reviews = reviews;
         this.myRate = myRate;
         this.isReviewByMe = isReviewByMe;
         this.isRateByMe = isRateByMe;
+        this.status = status;
+    }
+
+    public EUserBook getStatus() {
+        return status;
+    }
+
+    public void setStatus(EUserBook status) {
+        this.status = status;
     }
 
     public Book getBook() {

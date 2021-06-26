@@ -1,9 +1,7 @@
 package com.project.bookstore.controllers;
 
 import com.project.bookstore.models.*;
-import com.project.bookstore.payload.request.RateRequest;
-import com.project.bookstore.payload.request.ReviewRequest;
-import com.project.bookstore.payload.request.UserBookRequest;
+import com.project.bookstore.payload.request.*;
 import com.project.bookstore.payload.response.*;
 import com.project.bookstore.repository.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,8 +9,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
-import com.project.bookstore.payload.request.BookRequest;
 
 import javax.validation.Valid;
 import java.security.Principal;
@@ -39,6 +35,9 @@ public class BookController {
     @Autowired
     BookReviewRepository bookReviewRepository;
 
+    @Autowired
+    OrderRepository orderRepository;
+
     @GetMapping("/")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getBooks() {
@@ -58,7 +57,7 @@ public class BookController {
                     .badRequest()
                     .body(new MessageResponse("Error: Book with this title already exist!"));
         }
-        Book book = new Book(bookRequest.getTitle(), bookRequest.getAuthor());
+        Book book = new Book(bookRequest.getTitle(), bookRequest.getAuthor(), bookRequest.getPrice());
         bookRepository.save(book);
 
         return ResponseEntity.ok(book);
@@ -71,6 +70,7 @@ public class BookController {
         Book book = bookRepository.findById(bookId).orElseThrow(() -> new UsernameNotFoundException("Book not exist"));
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not exist"));
+        Optional<UserBook> userBook = userBookRepository.findByUserAndBook(user,book);
 
         List<BookReview> reviews = bookReviewRepository.findAllByBook(book);
         List<ReviewResponse> reviewsResponse = new ArrayList<>();
@@ -94,7 +94,9 @@ public class BookController {
 
         rateAverage = ratesSize == 0 ? 0 : rateAverage / ratesSize;
 
-        BookDetailsResponse response = new BookDetailsResponse(book, rateAverage, myRateValue, reviewsResponse, isRateByMe, isReviewByMe);
+        EUserBook status = userBook.map(UserBook::getStatus).orElse(null);
+
+        BookDetailsResponse response = new BookDetailsResponse(book, rateAverage, myRateValue, reviewsResponse, isRateByMe, isReviewByMe, status);
         return ResponseEntity.ok(response);
     }
 
@@ -128,7 +130,7 @@ public class BookController {
 
         List<BookResponse> response = new ArrayList<>();
         List<UserBook> userBooks = userBookRepository.findAllByUser(user);
-        List<UserBook> userBooks2 = userBookRepository.findAll();
+
         for(UserBook book : userBooks) {
             response.add(new BookResponse(book.getBook().getId(), book.getBook().getTitle(),book.getBook().getAuthor()));
         }
@@ -157,5 +159,42 @@ public class BookController {
         BookReview review = new BookReview(user, book, request.getReview());
         bookReviewRepository.save(review);
         return ResponseEntity.ok(new MessageResponse("Review has been added"));
+    }
+
+    @PostMapping("/order")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> orderBook(@RequestBody OrderRequest request, Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not exist"));
+        Book book = bookRepository.findById(request.getBookId()).orElseThrow(() -> new UsernameNotFoundException("Book not exist"));
+
+        UserOrder order = new UserOrder(user, book, request.getCustomerFullName(), request.getDeliverFullAddress());
+        orderRepository.save(order);
+        return ResponseEntity.ok(new MessageResponse("Order has been placed"));
+    }
+
+    @GetMapping("/my_orders")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getUserOrders(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not exist"));
+
+        List<UserOrder> orders = orderRepository.findByUser(user);
+        List<OrderResponse> response = new ArrayList<>();
+
+        for(UserOrder order: orders) {
+            response.add(new OrderResponse(order.getId(), new BookResponse(order.getBook().getId(), order.getBook().getTitle(), order.getBook().getAuthor())));
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/order/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getOrderDetails(@PathVariable("id") String id, Principal principal) {
+        Long orderId = Long.parseLong(id);
+        UserOrder order = orderRepository.findById(orderId).orElseThrow(() -> new UsernameNotFoundException("Order not exist"));
+        BookResponse book = new BookResponse(order.getBook().getId(), order.getBook().getTitle(), order.getBook().getAuthor());
+        return ResponseEntity.ok(new OrderDetailsResponse(order.getId(), book, order.getCustomerFullName(), order.getDeliverFullAddress()));
     }
 }
