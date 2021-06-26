@@ -34,7 +34,8 @@ public class User {
     @Size(max = 120)
     private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(
+            fetch = FetchType.LAZY)
     @JoinTable(	name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -42,16 +43,27 @@ public class User {
 
     @OneToMany(
             mappedBy = "user",
-            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<UserBook> books = new ArrayList<>();
 
     @OneToMany(mappedBy = "user",
-            cascade = CascadeType.ALL,
+            cascade = CascadeType.REMOVE,
             orphanRemoval = true
     )
     private Set<UserOrder> orders;
+
+    @OneToMany(mappedBy = "user",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    private Set<BookReview> reviews;
+
+    @OneToMany(mappedBy = "user",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    private Set<BookRate> rates;
 
     public User() {
     }
@@ -116,5 +128,21 @@ public class User {
 
     public void setOrders(Set<UserOrder> orders) {
         this.orders = orders;
+    }
+
+    public Set<BookReview> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(Set<BookReview> reviews) {
+        this.reviews = reviews;
+    }
+
+    public Set<BookRate> getRates() {
+        return rates;
+    }
+
+    public void setRates(Set<BookRate> rates) {
+        this.rates = rates;
     }
 }

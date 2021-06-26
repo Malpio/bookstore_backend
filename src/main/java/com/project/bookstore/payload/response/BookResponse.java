@@ -4,11 +4,13 @@ public class BookResponse {
     private Long id;
     private String title;
     private String author;
+    private double price;
 
-    public BookResponse(Long id, String title, String author) {
+    public BookResponse(Long id, String title, String author, double price) {
         this.author = author;
         this.id = id;
         this.title = title;
+        this.price = price;
     }
 
     public Long getId() {
@@ -33,5 +35,13 @@ public class BookResponse {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

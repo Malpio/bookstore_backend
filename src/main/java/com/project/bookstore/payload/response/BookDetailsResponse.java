@@ -7,7 +7,7 @@ import com.project.bookstore.models.EUserBook;
 import java.util.List;
 
 public class BookDetailsResponse {
-    private Book book;
+    private BookResponse book;
     private double rate;
     private int myRate;
     private List<ReviewResponse> reviews;
@@ -15,7 +15,7 @@ public class BookDetailsResponse {
     private boolean isReviewByMe;
     private EUserBook status;
 
-    public BookDetailsResponse(Book book, double rate, int myRate, List<ReviewResponse> reviews, boolean isRateByMe, boolean isReviewByMe, EUserBook status) {
+    public BookDetailsResponse(BookResponse book, double rate, int myRate, List<ReviewResponse> reviews, boolean isRateByMe, boolean isReviewByMe, EUserBook status) {
         this.book = book;
         this.rate = rate;
         this.reviews = reviews;
@@ -33,7 +33,7 @@ public class BookDetailsResponse {
         this.status = status;
     }
 
-    public Book getBook() {
+    public BookResponse getBook() {
         return book;
     }
 
@@ -61,7 +61,7 @@ public class BookDetailsResponse {
         this.rate = rate;
     }
 
-    public void setBook(Book book) {
+    public void setBook(BookResponse book) {
         this.book = book;
     }
 

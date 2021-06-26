@@ -29,7 +29,6 @@ public class Book {
 
     @OneToMany(
             mappedBy = "book",
-            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<UserBook> users = new ArrayList<>();
@@ -37,10 +36,22 @@ public class Book {
     private double price;
 
     @OneToMany(mappedBy = "book",
-            cascade = CascadeType.ALL,
+            cascade = CascadeType.REMOVE,
             orphanRemoval = true
     )
     private Set<UserOrder> orders;
+
+    @OneToMany(mappedBy = "book",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    private Set<BookRate> rates;
+
+    @OneToMany(mappedBy = "book",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    private Set<BookReview> reviews;
 
     public Book(String title, String author, double price) {
         this.author = author;
@@ -78,5 +89,29 @@ public class Book {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public Set<BookRate> getRates() {
+        return rates;
+    }
+
+    public void setRates(Set<BookRate> rates) {
+        this.rates = rates;
+    }
+
+    public Set<BookReview> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(Set<BookReview> reviews) {
+        this.reviews = reviews;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

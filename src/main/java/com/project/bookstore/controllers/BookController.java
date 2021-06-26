@@ -44,7 +44,7 @@ public class BookController {
         List<Book> books = bookRepository.findAll();
         List<BookResponse> response = new ArrayList<>();
         for(Book book : books) {
-            response.add(new BookResponse(book.getId(), book.getTitle(),book.getAuthor()));
+            response.add(new BookResponse(book.getId(), book.getTitle(),book.getAuthor(), book.getPrice()));
         }
         return ResponseEntity.ok(response);
     }
@@ -96,7 +96,7 @@ public class BookController {
 
         EUserBook status = userBook.map(UserBook::getStatus).orElse(null);
 
-        BookDetailsResponse response = new BookDetailsResponse(book, rateAverage, myRateValue, reviewsResponse, isRateByMe, isReviewByMe, status);
+        BookDetailsResponse response = new BookDetailsResponse(new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getPrice()), rateAverage, myRateValue, reviewsResponse, isRateByMe, isReviewByMe, status);
         return ResponseEntity.ok(response);
     }
 
@@ -132,7 +132,7 @@ public class BookController {
         List<UserBook> userBooks = userBookRepository.findAllByUser(user);
 
         for(UserBook book : userBooks) {
-            response.add(new BookResponse(book.getBook().getId(), book.getBook().getTitle(),book.getBook().getAuthor()));
+            response.add(new BookResponse(book.getBook().getId(), book.getBook().getTitle(),book.getBook().getAuthor(), book.getBook().getPrice()));
         }
         return ResponseEntity.ok(response);
     }
@@ -183,7 +183,7 @@ public class BookController {
         List<OrderResponse> response = new ArrayList<>();
 
         for(UserOrder order: orders) {
-            response.add(new OrderResponse(order.getId(), new BookResponse(order.getBook().getId(), order.getBook().getTitle(), order.getBook().getAuthor())));
+            response.add(new OrderResponse(order.getId(), new BookResponse(order.getBook().getId(), order.getBook().getTitle(), order.getBook().getAuthor(),order.getBook().getPrice())));
         }
 
         return ResponseEntity.ok(response);
@@ -191,10 +191,34 @@ public class BookController {
 
     @GetMapping("/order/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> getOrderDetails(@PathVariable("id") String id, Principal principal) {
+    public ResponseEntity<?> getOrderDetails(@PathVariable("id") String id) {
         Long orderId = Long.parseLong(id);
         UserOrder order = orderRepository.findById(orderId).orElseThrow(() -> new UsernameNotFoundException("Order not exist"));
-        BookResponse book = new BookResponse(order.getBook().getId(), order.getBook().getTitle(), order.getBook().getAuthor());
+        BookResponse book = new BookResponse(order.getBook().getId(), order.getBook().getTitle(), order.getBook().getAuthor(), order.getBook().getPrice());
         return ResponseEntity.ok(new OrderDetailsResponse(order.getId(), book, order.getCustomerFullName(), order.getDeliverFullAddress()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> removeBook(@PathVariable("id") String id) {
+        Long bookId = Long.parseLong(id);
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new UsernameNotFoundException("Book not exist"));
+
+        bookRepository.delete(book);
+        return ResponseEntity.ok(new MessageResponse("Book has been removed"));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> editBook(@PathVariable("id") String id,@RequestBody BookRequest request) {
+        Long bookId = Long.parseLong(id);
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new UsernameNotFoundException("Book not exist"));
+
+        book.setPrice(request.getPrice());
+        book.setAuthor(request.getAuthor());
+        book.setTitle(request.getTitle());
+
+        bookRepository.save(book);
+        return ResponseEntity.ok(new MessageResponse("Book has been changed"));
     }
 }
